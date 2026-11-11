@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anxiety Risk in Online Gamers — Dashboard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;600&display=swap">
+<style>
+  :root{--ink:#1B1A3D;--soft:#4A4A66;--muted:#6A6A85;--bg:#F6F4EE;--card:#FDFCF9;--line:#E2DED2;--accent:#E48B0F;--accent2:#F2A33A;--blue:#3D4FB0;}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:Inter,Arial,sans-serif;line-height:1.4;overflow:hidden}
+  .deck{position:fixed;inset:0 0 60px 0}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;gap:16px;padding:clamp(18px,3.5vw,48px) clamp(18px,5vw,72px);overflow-y:auto}
+  .slide.on{display:flex;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .slide.dark{background:var(--ink);color:#F6F4EE}
+  .eyebrow{font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--blue);margin:0}
+  .dark .eyebrow{color:var(--accent2)}
+  h1{font-family:'Space Grotesk',Arial,sans-serif;font-size:clamp(34px,6vw,72px);margin:0;line-height:1.05}
+  h2{font-family:'Space Grotesk',Arial,sans-serif;font-size:clamp(24px,3.4vw,42px);margin:0;line-height:1.1}
+  h3{font-family:'Space Grotesk',Arial,sans-serif;font-size:18px;margin:0 0 6px}
+  .lead{font-size:clamp(16px,1.6vw,20px);color:var(--soft);margin:0;max-width:900px}
+  .dark .lead{color:#D9D8F0}
+  .grid{display:grid;gap:14px}
+  .c2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+  .c3{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  .c4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+  .card p{margin:0;color:var(--soft);font-size:15px}
+  .dcard{background:#2A2860;border:1px solid #3E3C80;border-radius:14px;padding:18px}
+  .dcard p{margin:0;color:#D9D8F0}
+  .kpi{background:var(--ink);color:#E4E3F5;border-radius:14px;padding:18px}
+  .kpi b{display:block;font-family:'Space Grotesk',Arial,sans-serif;font-size:clamp(28px,3vw,40px);color:var(--accent2);line-height:1.1}
+  .n{display:inline-block;width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;text-align:center;line-height:26px;font-weight:700;font-size:13px;margin-bottom:8px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:1px}
+  .bars{display:flex;flex-direction:column;gap:14px}
+  .bar{display:grid;grid-template-columns:90px 1fr 130px;align-items:center;gap:12px;font-size:16px}
+  .track{background:#ECEAF6;border-radius:6px;height:28px;overflow:hidden}
+  .fill{height:100%;border-radius:6px}
+  .bar span:last-child{text-align:right;font-variant-numeric:tabular-nums;color:var(--soft)}
+  .viz{display:flex;gap:18px;flex:1;min-height:0;flex-wrap:wrap}
+  .viz .fig{flex:3 1 480px;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;min-height:0}
+  .viz .fig img{max-width:100%;max-height:calc(100vh - 300px);object-fit:contain;display:block}
+  .viz .side{flex:1 1 260px;display:flex;flex-direction:column;gap:12px;justify-content:center}
+  .take{background:#FDF1DD;border-left:4px solid var(--accent);padding:12px 14px;border-radius:6px;font-size:15px;color:var(--ink);margin:0}
+  .note{font-size:13px;color:var(--muted);margin:0}
+  .trio{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+  .trio img{width:100%;height:auto;max-height:calc(100vh - 380px);object-fit:contain;display:block;margin:6px 0 10px}
+  .numbered{display:flex;gap:16px;align-items:flex-start}
+  .numbered .big{font-family:'Space Grotesk',Arial,sans-serif;font-size:44px;font-weight:700;color:var(--accent2);line-height:1}
+  .bar-nav{position:fixed;left:0;right:0;bottom:0;height:60px;background:var(--card);border-top:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 16px}
+  .bar-nav button{font:600 14px Inter,Arial,sans-serif;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;padding:9px 18px;cursor:pointer}
+  .bar-nav button.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .bar-nav button:disabled{opacity:.4;cursor:default}
+  .progress{flex:1;height:6px;background:#ECEAF6;border-radius:3px;overflow:hidden}
+  .progress div{height:100%;background:var(--accent);transition:width .25s}
+  .count{font-size:14px;color:var(--soft);font-variant-numeric:tabular-nums;min-width:120px;text-align:right}
+  select{font:14px Inter,Arial,sans-serif;border:1px solid var(--line);border-radius:8px;padding:6px;background:#fff;max-width:180px}
+  @media(max-width:640px){.count{display:none}.bar{grid-template-columns:70px 1fr 100px;font-size:14px}}
+  .pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:14px;flex:1;min-height:0}
+  .pair .card{display:flex;flex-direction:column;gap:8px}
+  .pair img{width:100%;height:auto;max-height:calc(100vh - 360px);object-fit:contain;display:block;background:#fff;border-radius:8px}
+  .mini td,.mini th{padding:5px 8px;font-size:13px}
+  .rec{display:flex;gap:10px;align-items:baseline;margin:0 0 10px;color:#D9D8F0}
+  .rec b{color:var(--accent2);font-family:'Space Grotesk',Arial,sans-serif}
+  .steps8{grid-template-columns:repeat(4,1fr);grid-auto-rows:1fr;flex:1;min-height:0;gap:18px}
+  .steps8 .card{padding:24px 26px;display:flex;flex-direction:column;justify-content:center}
+  .steps8 h3{font-size:clamp(18px,1.8vw,24px);margin-bottom:8px}
+  .steps8 p{font-size:clamp(15px,1.3vw,18px)}
+  .steps8 .n{width:36px;height:36px;line-height:36px;font-size:16px;margin-bottom:12px}
+  @media(max-width:900px){.steps8{grid-template-columns:repeat(2,1fr)}}
+  .big3{grid-template-columns:repeat(3,1fr);flex:1;min-height:0;gap:18px}
+  .big3 .card{padding:32px;display:flex;flex-direction:column;justify-content:center}
+  .big3 h3{font-size:clamp(22px,2.2vw,30px);margin-bottom:10px}
+  .big3 p{font-size:clamp(16px,1.5vw,21px)}
+  .big3 .n{width:44px;height:44px;line-height:44px;font-size:19px;margin-bottom:16px}
+  .bigend{grid-template-columns:repeat(2,1fr);flex:1;min-height:0;gap:18px}
+  .bigend .dcard{padding:32px;display:flex;flex-direction:column;justify-content:center}
+  .bigend h3{font-size:clamp(22px,2.2vw,30px)!important}
+  .bigend .rec{font-size:clamp(16px,1.6vw,22px);margin-bottom:16px}
+  .bigend .rec b{font-size:1.3em}
+  @media(max-width:900px){.big3,.bigend{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+<section class="slide dark" data-title="Title">
+  <div style="flex:1"></div>
+  <p class="eyebrow">NCP_4302 · Embedded Systems 1 Laboratory · UE Caloocan</p>
+  <h1>An Analysis of Anxiety Risk<br>in Online Gamers</h1>
+  <p class="lead">Using gaming hours, social phobia and life satisfaction to understand and predict anxiety (GAD-7).</p>
+  <div style="flex:1"></div>
+  <p class="lead" style="font-size:15px">Delos Angeles, Ranilo John · Rana, Adrian · Villaflor, Kyle — submitted to Dr. Alexis John Rubio</p>
+</section>
+
+<section class="slide" data-title="The problem">
+  <p class="eyebrow">The problem</p>
+  <h2>Why do some gamers report high anxiety while others don’t?</h2>
+  <p class="lead">Heavy gaming doesn’t always mean high anxiety. We look at which life factors matter more.</p>
+  <div class="grid big3" style="margin-top:8px">
+    <div class="card"><span class="n">1</span><h3>Anxiety levels</h3><p>How anxious are gamers, measured by GAD-7 total scores?</p></div>
+    <div class="card"><span class="n">2</span><h3>Related factors</h3><p>Is anxiety linked to gaming hours, social phobia (SPIN_T) or life satisfaction (SWL_T)?</p></div>
+    <div class="card"><span class="n">3</span><h3>Top predictor</h3><p>Which variable is the most significant predictor of anxiety risk?</p></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Dataset">
+  <p class="eyebrow">Dataset</p>
+  <h2>Online Gaming Anxiety Data (Kaggle)</h2>
+  <div class="grid c4">
+    <div class="kpi"><b>13,464</b>respondents</div>
+    <div class="kpi"><b>55</b>columns</div>
+    <div class="kpi"><b>0</b>duplicate rows</div>
+    <div class="kpi"><b>3</b>scales: GAD, SWL, SPIN</div>
+  </div>
+  <div class="grid c2">
+    <div class="card"><table class="mini">
+      <tr><th>Column</th><th>Meaning</th></tr>
+      <tr><td>GAD1–GAD7, GAD_T</td><td>Anxiety items and total score (0–21)</td></tr>
+      <tr><td>GADE</td><td>Effect of gaming on daily activities</td></tr>
+      <tr><td>Hours</td><td>Weekly gaming hours</td></tr>
+      <tr><td>streams</td><td>Time spent watching gaming content</td></tr>
+      <tr><td>Game, Platform</td><td>Most played game and platform</td></tr>
+      <tr><td>whyplay, Playstyle</td><td>Reason for playing; single-player or online</td></tr>
+    </table></div>
+    <div class="card"><table class="mini">
+      <tr><th>Column</th><th>Meaning</th></tr>
+      <tr><td>SPIN_T</td><td>Social phobia score (SPIN1–SPIN17)</td></tr>
+      <tr><td>SWL_T</td><td>Life satisfaction score (SWL1–SWL5)</td></tr>
+      <tr><td>Narcissism</td><td>Narcissism score</td></tr>
+      <tr><td>Age, Gender</td><td>Demographic details</td></tr>
+      <tr><td>Work, Degree</td><td>Employment and education status</td></tr>
+      <tr><td>Residence, Birthplace</td><td>Location information (plus ISO3 codes)</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Data cleaning">
+  <p class="eyebrow">Data cleaning and preparation</p>
+  <h2>Eight steps in the notebook</h2>
+  <div class="grid steps8">
+    <div class="card"><span class="n">1</span><h3>Import from Kaggle</h3><p>Downloaded with kagglehub for reproducibility.</p></div>
+    <div class="card"><span class="n">2</span><h3>Import libraries</h3><p>Pandas, NumPy, Matplotlib, Seaborn, os.</p></div>
+    <div class="card"><span class="n">3</span><h3>Locate the files</h3><p>Found the survey CSV in the dataset folder.</p></div>
+    <div class="card"><span class="n">4</span><h3>Encoding fallback</h3><p>UTF-8 failed; loaded with ISO-8859-1.</p></div>
+    <div class="card"><span class="n">5</span><h3>Preview</h3><p>df.head() confirmed the load and layout.</p></div>
+    <div class="card"><span class="n">6</span><h3>Check structure</h3><p>Shape 13,464 × 55; columns and data types.</p></div>
+    <div class="card"><span class="n">7</span><h3>Remove duplicates</h3><p>0 duplicates found; all 13,464 rows kept.</p></div>
+    <div class="card"><span class="n">8</span><h3>Cap gaming hours</h3><p>Max was 8,000 h a week; clipped to 100 h.</p></div>
+  </div>
+  <p class="take">Result: 13,464 × 55, ready for analysis. Capping keeps every respondent while stopping impossible hour values from distorting the results.</p>
+</section>
+
+<section class="slide" data-title="Respondent profile">
+  <p class="eyebrow">Exploratory data analysis</p>
+  <h2>Respondent profile</h2>
+  <div class="trio">
+    <div class="card"><h3>Age</h3><img src="img/age-dist.png" alt="Histogram of age, highest at 18 to 22 and falling sharply after 30"><p>Mostly young adults, peak at 18–22.</p></div>
+    <div class="card"><h3>Weekly gaming hours</h3><img src="img/hours-dist.png" alt="Histogram of weekly hours peaking near 20 hours"><p>Most play 10–25 h a week; 40+ h is the exception.</p></div>
+    <div class="card"><h3>GAD_T anxiety score</h3><img src="img/gad-dist.png" alt="Histogram of GAD_T scores 0 to 21, highest at 0"><p>Most score low; a long tail reaches 21.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-title="Anxiety levels">
+  <p class="eyebrow">Problem 1 · Anxiety levels</p>
+  <h2>Anxiety risk classes among 13,464 gamers</h2>
+  <div class="card" style="padding:24px">
+    <div class="bars">
+      <div class="bar"><span>Low</span><div class="track"><div class="fill" style="width:100%;background:#6F86D6"></div></div><span>7,446 · 55.3%</span></div>
+      <div class="bar"><span>Mild</span><div class="track"><div class="fill" style="width:49.2%;background:#4A5FC1"></div></div><span>3,666 · 27.2%</span></div>
+      <div class="bar"><span>Moderate</span><div class="track"><div class="fill" style="width:21.7%;background:#2E3A8C"></div></div><span>1,613 · 12.0%</span></div>
+      <div class="bar"><span>High</span><div class="track"><div class="fill" style="width:9.9%;background:var(--accent)"></div></div><span>739 · 5.5%</span></div>
+    </div>
+  </div>
+  <p class="take">Solved: most gamers are Low risk, but 44.7% show at least mild anxiety and 5.5% are High risk.</p>
+</section>
+
+<section class="slide" data-title="Related factors">
+  <p class="eyebrow">Problem 2 · Related factors</p>
+  <h2>Anxiety tracks psychology, not play time</h2>
+  <div class="pair">
+    <div class="card"><h3>Correlation heatmap</h3><img src="img/heatmap.png" alt="Correlation heatmap: GAD_T with SPIN_T 0.44, SWL_T −0.40, Hours 0.013"><p>Social phobia +0.44 · life satisfaction −0.40 · hours 0.013</p></div>
+    <div class="card"><h3>Weekly gaming hours vs anxiety</h3><img src="img/hours.png" alt="Scatter of weekly gaming hours 0 to 100 against GAD_T 0 to 21 with no visible trend"><p>Full range of anxiety at every level of play: no trend.</p></div>
+  </div>
+  <p class="take">Solved: social phobia raises anxiety, life satisfaction lowers it, and gaming hours alone show no link.</p>
+</section>
+
+<section class="slide" data-title="Top predictor">
+  <p class="eyebrow">Problem 3 · Top predictor</p>
+  <h2>OLS regression on GAD_T</h2>
+  <div class="viz">
+    <div class="fig"><img src="img/coef.png" alt="Regression coefficients: Hours near 0, SPIN_T +0.125, SWL_T −0.190, Narcissism +0.332, Age near 0"></div>
+    <div class="side">
+      <div class="card"><table class="mini">
+        <tr><th>Variable</th><th>Coef</th><th>p</th></tr>
+        <tr><td>SPIN_T</td><td>+0.1253</td><td>&lt;0.001</td></tr>
+        <tr><td>SWL_T</td><td>−0.1897</td><td>&lt;0.001</td></tr>
+        <tr><td>Narcissism</td><td>+0.3323</td><td>&lt;0.001</td></tr>
+        <tr><td>Hours</td><td>+0.0064</td><td>0.012</td></tr>
+        <tr><td>Age</td><td>+0.0006</td><td>0.954</td></tr>
+      </table></div>
+      <p class="take">Solved: social phobia and life satisfaction are the strongest predictors; age has none.</p>
+      <p class="note">R² = 0.280, n = 13,464. Coefficients depend on each variable’s scale, so bar height isn’t an importance ranking.</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-title="Who is most at risk">
+  <p class="eyebrow">Deeper look</p>
+  <h2>Who is most at risk</h2>
+  <div class="pair">
+    <div class="card"><h3>Anxiety across the lifespan</h3><img src="img/age-clean.png" alt="Anxiety score by age 18 to 60 with LOWESS line falling from about 4.5 to 1.3"><p>Peaks at ages 18–23 (near 21), then falls with age.</p></div>
+    <div class="card"><h3>Gaming hours × social phobia</h3><img src="img/interaction-clean.png" alt="Regression lines of anxiety vs weekly hours colored by social phobia score, with wide bands"><p>Low social phobia: flat. High social phobia: more hours, more anxiety.</p></div>
+  </div>
+  <p class="take">Hours become a risk only when paired with social phobia, and young adults carry the most risk.</p>
+</section>
+
+<section class="slide dark" data-title="Conclusion & recommendations">
+  <p class="eyebrow">Findings</p>
+  <h2>Conclusion and recommendations</h2>
+  <div class="grid bigend" style="margin-top:6px">
+    <div class="dcard">
+      <h3 style="color:#F6F4EE;margin-bottom:12px">Conclusion</h3>
+      <p class="rec"><b>1</b> Social phobia (SPIN_T) is the #1 predictor (r = +0.44)</p>
+      <p class="rec"><b>2</b> Life satisfaction is the strongest protective factor (r = −0.40)</p>
+      <p class="rec"><b>3</b> Gaming hours alone do NOT predict anxiety (r = 0.013)</p>
+      <p class="rec"><b>4</b> Age 18–23 is the highest-risk window</p>
+    </div>
+    <div class="dcard">
+      <h3 style="color:#F6F4EE;margin-bottom:12px">Recommendations</h3>
+      <p class="rec"><b>1</b> Screen gamers for social phobia</p>
+      <p class="rec"><b>2</b> Strengthen life satisfaction and social connection</p>
+      <p class="rec"><b>3</b> Don’t cap gaming hours for everyone</p>
+      <p class="rec"><b>4</b> Focus outreach on ages 18–23</p>
+    </div>
+  </div>
+  <p class="lead" style="font-size:15px">Associations from survey data, not causes. Thank you! · Delos Angeles · Rana · Villaflor</p>
+</section>
+
+</div>
+
+<nav class="bar-nav" aria-label="Slide navigation">
+  <button id="prev" aria-label="Previous slide">← Prev</button>
+  <select id="jump" aria-label="Jump to slide"></select>
+  <div class="progress"><div id="prog"></div></div>
+  <span class="count" id="count"></span>
+  <button id="next" class="primary" aria-label="Next slide">Next →</button>
+</nav>
+
+<script>
+(function(){
+  var slides=[].slice.call(document.querySelectorAll('.slide'));
+  var i=0, prev=document.getElementById('prev'), next=document.getElementById('next'),
+      jump=document.getElementById('jump'), prog=document.getElementById('prog'), count=document.getElementById('count');
+  slides.forEach(function(s,k){var o=document.createElement('option');o.value=k;o.textContent=(k+1)+'. '+s.dataset.title;jump.appendChild(o);});
+  function show(k,push){
+    i=Math.max(0,Math.min(slides.length-1,k));
+    slides.forEach(function(s,j){s.classList.toggle('on',j===i);});
+    slides[i].scrollTop=0;
+    prev.disabled=i===0; next.disabled=i===slides.length-1;
+    jump.value=i; prog.style.width=((i+1)/slides.length*100)+'%';
+    count.textContent='Slide '+(i+1)+' / '+slides.length;
+    if(push!==false){try{history.replaceState(null,'','#slide-'+(i+1));}catch(e){}}
+  }
+  function fromHash(){var m=/^#slide-(\d+)$/.exec(location.hash);return m?parseInt(m[1],10)-1:0;}
+  prev.onclick=function(){show(i-1);}; next.onclick=function(){show(i+1);};
+  jump.onchange=function(){show(parseInt(jump.value,10));};
+  document.addEventListener('keydown',function(e){
+    if(e.target===jump)return;
+    if(['ArrowRight','PageDown',' '].indexOf(e.key)>-1){e.preventDefault();show(i+1);}
+    if(['ArrowLeft','PageUp'].indexOf(e.key)>-1){e.preventDefault();show(i-1);}
+    if(e.key==='Home')show(0); if(e.key==='End')show(slides.length-1);
+  });
+  var sx=null;
+  document.getElementById('deck').addEventListener('touchstart',function(e){sx=e.touches[0].clientX;},{passive:true});
+  document.getElementById('deck').addEventListener('touchend',function(e){if(sx===null)return;var dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>50)show(i+(dx<0?1:-1));sx=null;});
+  window.addEventListener('hashchange',function(){show(fromHash(),false);});
+  show(fromHash(),false);
+})();
+</script>
+</body>
+</html>
